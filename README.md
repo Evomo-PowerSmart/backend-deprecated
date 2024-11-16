@@ -96,11 +96,11 @@ chat reyhan for creds config
 
 ## To-Do List
 
-### 1. **Implement Gunicorn for Production Deployment**
+~~### 1. **Implement Gunicorn for Production Deployment**~~
 - Gunicorn will handle multiple concurrent requests, ensuring better performance and scalability than the built-in Flask development server.
 - The application will be set up to run with Gunicorn in the production environment.
 
-### 2. **Implement Supervisor for Process Management**
+~~### 2. **Implement Supervisor for Process Management**~~
 - Supervisor will be used to ensure that Gunicorn is always running.
 - If the Gunicorn process crashes or fails, Supervisor will automatically restart it. This is crucial for maintaining the stability of the system in a production environment.
 
