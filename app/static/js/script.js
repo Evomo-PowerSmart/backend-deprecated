@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
  */
 const clientId = "client-" + Math.random().toString(16).substr(2, 8);
 const host = "34.42.59.154";
-const port = 80; // WebSocket Port
+const port = 8080; // WebSocket Port
 let currentTopic = "";
 
 /**
