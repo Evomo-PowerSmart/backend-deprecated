@@ -27,9 +27,9 @@ class DatabaseManager:
                 password=DB_PASSWORD
             )
             self.cursor = self.conn.cursor()
-            print("Connected to PostgreSQL database.")
+            print(f"{datetime.now()}: Connected to PostgreSQL database.")
         except Exception as e:
-            print(f"Failed to connect to database: {e}")
+            print(f"{datetime.now()}: Failed to connect to database: {e}")
             exit(1)
 
     def save_energy_data(self, data, position):
@@ -43,7 +43,7 @@ class DatabaseManager:
               data["reactive_energy_export"], data["apparent_energy_import"], data["apparent_energy_export"]))
 
         self.conn.commit()
-        print("Data saved to PostgreSQL database.")
+        print(f"{datetime.now()}: Data saved to PostgreSQL database.")
 
     """
         Execute querry

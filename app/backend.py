@@ -1,7 +1,6 @@
 
 import firebase_admin
 import os
-import json
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
@@ -109,7 +108,7 @@ def login():
         session['uid'] = uid
         return redirect(url_for('index'))
     except Exception as e:
-        print("Error verifying ID token:", e)
+        print(f"{datetime.now()}: Error verifying ID token:", e)
         return redirect(url_for('login'))
 
 """
