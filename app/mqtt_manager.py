@@ -13,7 +13,7 @@ class MQTTManager:
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
         self.mqtt_client.on_disconnect = self.on_disconnect
-        self.mqtt_client.connect("34.42.59.154", 1883, 3600)
+        self.mqtt_client.connect("34.44.202.231", 1883, 65000)
 
         self.topics = {
             "evomo/raw_data/loc_a": "A",

@@ -161,7 +161,7 @@ def get_fetch_data():
     
     return jsonify(data)
 
-mqtt_manager.start_mqtt_loop()
+#mqtt_manager.start_mqtt_loop()
 
 """
     Main
