@@ -63,11 +63,8 @@ class MQTTManager:
     def on_message(self, client, userdata, msg):
         try:
             payload = json.loads(msg.payload.decode())
-            print(payload)
             raw_data = payload.get("data")
-            print(raw_data)
             data = json.loads(raw_data)
-            print(data)
             position = None
 
             for topic, pos in self.topics.items():
@@ -84,7 +81,6 @@ class MQTTManager:
 
             prev_data = self.last_two_records[position][0]
             if prev_data:
-                print(position)
                 diff_data = {
                     "reading_time": data.get("reading_time"),
                     "position": position,
@@ -99,7 +95,6 @@ class MQTTManager:
                 }
 
                 self.db_manager.save_energy_data(diff_data)
-            print(data.get("reading_time"))
         except json.JSONDecodeError:
             print("Error: Payload is not valid JSON")
         except KeyError as e:
