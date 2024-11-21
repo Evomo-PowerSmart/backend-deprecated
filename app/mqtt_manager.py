@@ -1,7 +1,6 @@
 import paho.mqtt.client as mqtt
 import json
 import time
-from datetime import datetime
 
 """
     MQTT handler
@@ -13,18 +12,20 @@ class MQTTManager:
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
         self.mqtt_client.on_disconnect = self.on_disconnect
-        self.mqtt_client.connect("34.44.202.231", 1883, 65000)
+        self.mqtt_client.username_pw_set("193006f7395541fc", "193006f7396ceeea")
+        self.mqtt_client.connect("mqtt.telkomiot.id", 1883, 3600)
 
         self.topics = {
-            "evomo/raw_data/loc_a": "A",
-            "evomo/raw_data/loc_b": "B",
-            "evomo/raw_data/loc_c": "C"
+            "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441": "Chiller_Witel_Jaksel",
+            "v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912": "Lift_Witel_Jaksel",
+            "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357": "Lift_OPMC"
         }
 
-        self.previous_data = {
-            "A": None,
-            "B": None,
-            "C": None
+        # Store last two records for each location
+        self.last_two_records = {
+            "Chiller_Witel_Jaksel": [None, None],
+            "Lift_Witel_Jaksel": [None, None],
+            "Lift_OPMC": [None, None]
         }
 
     """
@@ -32,32 +33,29 @@ class MQTTManager:
     """
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
-            print(f"{datetime.now()}: Connected to MQTT broker")
+            print("Connected to MQTT broker")
             for topic in self.topics:
                 self.mqtt_client.subscribe(topic, qos=2)
-                print(f"{datetime.now()}: Subscribed to '{topic}' topic")
+                print(f"Subscribed to '{topic}' topic")
         else:
-            print(f"{datetime.now()}: Failed to connect, return code: {rc}")
+            print(f"Failed to connect, return code: {rc}")
 
     def on_disconnect(self, client, userdata, rc):
-        print(f"{datetime.now()}: Disconnected with result code {rc}")
+        print(f"Disconnected with result code {rc}")
         if rc != 0:
             self.reconnect(client)
 
     def reconnect(self, client):
         while True:
             try:
-                print(f"{datetime.now()}: Attempting to connect with broker...")
-                client.connect("34.42.59.154", 1883, 3600)
-                print(f"{datetime.now()}: Attempting to subscribe topic...")
+                print("Attempting to reconnect...")
                 for topic in self.topics:
                     self.mqtt_client.subscribe(topic, qos=2)
-                    print(f"{datetime.now()}: Subscribed to '{topic}' topic")
+                    print(f"Subscribed to '{topic}' topic")
                 break
             except Exception as e:
-                print(f"{datetime.now()}: Reconnect failed: {e}")
+                print(f"Reconnect failed: {e}")
                 time.sleep(3)
-
 
     """
         Message callback
@@ -65,7 +63,11 @@ class MQTTManager:
     def on_message(self, client, userdata, msg):
         try:
             payload = json.loads(msg.payload.decode())
-            data = payload.get("data")
+            print(payload)
+            raw_data = payload.get("data")
+            print(raw_data)
+            data = json.loads(raw_data)
+            print(data)
             position = None
 
             for topic, pos in self.topics.items():
@@ -73,12 +75,16 @@ class MQTTManager:
                     position = pos
                     break
             else:
-                print(f"{datetime.now()}: Unhandled topic: {msg.topic}")
+                print(f"Unhandled topic: {msg.topic}")
                 return
-            
-            prev_data = self.previous_data[position]
+          
+            # Update last two records
+            self.last_two_records[position].append(data)
+            self.last_two_records[position] = self.last_two_records[position][-2:]
 
+            prev_data = self.last_two_records[position][0]
             if prev_data:
+                print(position)
                 diff_data = {
                     "reading_time": data.get("reading_time"),
                     "position": position,
@@ -92,22 +98,14 @@ class MQTTManager:
                     "apparent_energy_export": data.get("apparent_energy_export") - prev_data.get("apparent_energy_export")
                 }
 
-                self.db_manager.save_energy_data(diff_data, position)
-
-                result = self.mqtt_client.publish(f"evomo/final_data/loc_{position.lower()}", json.dumps(diff_data), qos=2)
-                if result.rc == mqtt.MQTT_ERR_SUCCESS:
-                    print(f"{datetime.now()}: Data from {msg.topic} published to evomo/final_data/loc_{position.lower()}")
-                else:
-                    print(f"{datetime.now()}: Failed to publish data")
-
-            self.previous_data[position] = data
-
+                self.db_manager.save_energy_data(diff_data)
+            print(data.get("reading_time"))
         except json.JSONDecodeError:
-            print(f"{datetime.now()}: Error: Payload is not valid JSON")
+            print("Error: Payload is not valid JSON")
         except KeyError as e:
-            print(f"{datetime.now()}: Error: Required field not found - {e}")
+            print(f"Error: Required field not found - {e}")
         except Exception as e:
-            print(f"{datetime.now()}: Unexpected error: {e}")
+            print(f"Unexpected error: {e}")
 
     """
         MQTT loop
