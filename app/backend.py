@@ -170,7 +170,7 @@ def get_fetch_data(location, startdate, enddate):
 @app.route('/api/fetch_data/<location>/last_history', methods=['GET'])
 def get_last_history(location):
     try:
-        records = mqtt_manager.last_two_records.get(location.upper(), [])
+        records = mqtt_manager.last_two_records.get(location, [])
         
         data = []
         for record in records:
