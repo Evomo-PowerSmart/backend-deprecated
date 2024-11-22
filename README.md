@@ -10,7 +10,7 @@ git config --global core.autocrlf false
 ```
 
 ## API Documentation
-### GET /config
+### GET /config ( Implemented for web )
 Description: Retrieves Firebase configuration required for the frontend application.
 
 | Parameter  | Type | Description |
@@ -30,7 +30,7 @@ Response
 }
 ```
 
-### POST /login
+### POST /login ( Implemented for web )
 Description: Logs the user in using a Firebase ID token.
 
 | Parameter  | Type | Description |
@@ -43,7 +43,7 @@ Response :
 301 Moved Permanently: Redirects back to the login page if login fails.
 ```
 
-### GET /index
+### GET /index ( Implemented for web )
 Description: Displays the dashboard page after successful login.
 
 | Parameter  | Type | Description |
@@ -55,79 +55,154 @@ Response :
 200 OK: Returns the HTML page of the user's dashboard.
 ```
 
-### GET /logout
+### GET /logout ( Implemented for web )
 Description: Logs the user out and clears the session.
 
-| Parameter  | Type | Description |
-| ------------- |:-------------:|:-------------:|
-| None     | N/A     | 	Clears the user session and redirects to the login page.     |
+| Parameter      | Type          | Description   |
+| -------------- |:-------------:|:-------------:|
+| None           | N/A           | Clears the user session and redirects to the login page. |
 
 Response :
 ```
 200 OK: User is redirected back to the login page.
 ```
 
-### GET /api/fetch_data
-Description: Retrieves historical data based on the specified time range (startdate and enddate).
+### GET /api/fetch_data/{location}/{startdate}&{enddate}
+Description: Retrieves historical data based on the specified time range and location.
 
-| Parameter  | Type | Description |
-| ------------- |:-------------:|:-------------:|
-| startdate     | string     | 	Start time in `YYYY-MM-DD%20HH:MM:SS` format.     |
-| enddate     | string     | 	End time in `YYYY-MM-DD%20HH:MM:SS` format.     |
+| Parameter  | Type   | Description                                      |
+|------------|--------|--------------------------------------------------|
+| `location` | string | The location identifier (e.g., "Chiller_Witel_Jaksel", "Lift_Witel_Jaksel", "Lift_OPMC").        |
+| `startdate`| string | Start time in `YYYY-MM-DD%20HH:MM:SS` format.      |
+| `enddate`  | string | End time in `YYYY-MM-DD%20HH:MM:SS` format.        |
 
 Example:
-```
-http://34.31.231.164:5000/api/fetch_data?startdate=2024-11-01%2000:12:23&endddate=2024-11-18%2000:15:23
-```
+
+[http://35.202.202.84:5000/api/fetch_data/Lift_OPMC/2024-11-01%2000:12:23&2024-11-25%2000:15:23](http://35.202.202.84:5000/api/fetch_data/Lift_OPMC/2024-11-01%2000:12:23&2024-11-25%2000:15:23)
 
 Response:
 ```
 [
   {
-    "active_energy_export": 0,
-    "active_energy_import": 19638,
-    "apparent_energy_export": 0,
-    "apparent_energy_import": -4386111,
     "id": 1,
+    "reading_time": "2024-11-16 20:44:28",
+    "position": "CHILLER_WITEL_JAKSEL",
+    "meter_type": "mk10m",
     "meter_serial_number": 56580,
-    "meter_type": "mk10m",
-    "position": "A",
-    "reactive_energy_export": 0,
-    "reactive_energy_import": 2938,
-    "reading_time": "2024-11-16 20:44:28"
-  },
-  {
+    "active_energy_import": 19638,
     "active_energy_export": 0,
-    "active_energy_import": -46010,
-    "apparent_energy_export": 0,
-    "apparent_energy_import": -4083345,
-    "id": 2,
-    "meter_serial_number": 69632,
-    "meter_type": "mk10m",
-    "position": "B",
+    "reactive_energy_import": 2938,
     "reactive_energy_export": 0,
-    "reactive_energy_import": -517,
-    "reading_time": "2024-11-16 20:44:31"
+    "apparent_energy_import": -4386111,
+    "apparent_energy_export": 0
   },
   {
-    .....
-  }
-}
+    "id": 2,
+    "reading_time": "2024-11-16 20:44:31",
+    "position": "LIFT_WITEL_JAKSEL",
+    "meter_type": "mk10m",
+    "meter_serial_number": 69632,
+    "active_energy_import": -46010,
+    "active_energy_export": 0,
+    "reactive_energy_import": -517,
+    "reactive_energy_export": 0,
+    "apparent_energy_import": -4083345,
+    "apparent_energy_export": 0
+  },
+  ...
+]
 ```
 
-## MQTT Documentation
-Broker (Host) : `34.42.59.154`
+### GET /api/fetch_data/{location}/last_history
+Description: Logs the user out and clears the session.
 
-Port : `8080`
+| Parameter      | Type          | Description     |
+| -------------- |:-------------:|:---------------:|
+| Location       | String        | Location        |
 
-Topic (Dummy) : `evomo\final_data\loc_a, evomo\final_data\loc_a, evomo\final_data\loc_b`
+Example:
 
-Example of implementation is on app/static/js/script.js
+[http://35.202.202.84:5000/api/fetch_data/Lift_OPMC/last_history](http://35.202.202.84:5000/api/fetch_data/Lift_OPMC/last_history)
+
+Response:
+```
+[
+  {
+    "reading_time": "2024-11-18 10:00:00",
+    "position": "Lift_OPMC",
+    "meter_type": "mk10m",
+    "meter_serial_number": 12345,
+    "active_energy_import": 200,
+    "active_energy_export": 0,
+    "reactive_energy_import": 150,
+    "reactive_energy_export": 0,
+    "apparent_energy_import": 250,
+    "apparent_energy_export": 0
+  },
+  ...
+]
+
+```
+
+### GET /api/fetch_data/anomaly
+Description: Logs the user out and clears the session.
+
+| Parameter      | Type          | Description     |
+| -------------- |:-------------:|:---------------:|
+| None           | N/A           | None            |
+
+Example:
+
+[http://35.202.202.84:5000/api/fetch_data/anomaly](http://35.202.202.84:5000/api/fetch_data/anomaly)
+
+Response:
+```
+[
+  {
+    "id": 1,
+    "position": "A",
+    "reading_time": "2024-11-16 20:44:28"
+  },
+  ...
+]
+```
+
+### GET /api/fetch_data/anomaly/{id}
+Description: Logs the user out and clears the session.
+
+| Parameter      | Type          | Description     |
+| -------------- |:-------------:|:---------------:|
+| id             | String        | The anomaly id  |
+
+Example:
+
+[http://35.202.202.84:5000/api/fetch_data/anomaly/1](http://35.202.202.84:5000/api/fetch_data/anomaly/1)
+
+Response:
+```
+[
+  {
+    "reading_time": "2024-11-16 20:44:28",
+    "position": "A",
+    "meter_type": "mk10m",
+    "meter_serial_number": 56580,
+    "active_energy_import": 19638,
+    "active_energy_export": 0,
+    "reactive_energy_import": 2938,
+    "reactive_energy_export": 0,
+    "apparent_energy_import": -4386111,
+    "apparent_energy_export": 0,
+    "anomaly_type": "High Reactive Energy"
+  }
+]
+```
+
+
 
 ## GCP Deployment
 Protocol : `http`
 
-url : `34.31.231.164`
+url : `35.202.202.84`
 
 post : `5000`
 
