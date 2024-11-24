@@ -7,10 +7,11 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from datetime import datetime
 from db_manager import DatabaseManager
-from mqtt_manager import MQTTManager
+from mqtt_handler import MQTTManager
 from flask import Flask, render_template, redirect, url_for, request, session
 from firebase_admin import credentials, auth, initialize_app
 from functools import wraps
+import atexit
 
 """
     Socket and Flask
@@ -246,10 +247,12 @@ def get_anomaly_data_by_id(id):
         return jsonify({"error": str(e)}), 500
 
 mqtt_manager.start_mqtt_loop()
-
+atexit.register(mqtt_manager.cleanup)
 """
     Main
 """
 if __name__ == '__main__':
-
-    socketio.run(app, host='0.0.0.0', port='5000', debug=False)
+    try:
+    	socketio.run(app, host='0.0.0.0', port='5000', debug=False)
+    finally:
+        mqtt_manager.cleanup()
