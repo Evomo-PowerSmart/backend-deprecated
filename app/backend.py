@@ -172,31 +172,23 @@ def get_last_history(location):
     try:
         records = mqtt_manager.last_two_records.get(location, [])
         
-        if len(records) < 2:  # Need at least 2 records to calculate difference
-            return jsonify([])
-            
-        # Get the two most recent records
-        current_record = records[-1]
-        previous_record = records[-2]
+        data = []
+        for record in records:
+            if record:
+                data.append({
+                    "reading_time": record.get("reading_time"),
+                    "position": location.upper(),
+                    "meter_type": record.get("meter_type"),
+                    "meter_serial_number": record.get("meter_serial_number"),
+                    "active_energy_import": record.get("active_energy_import"),
+                    "active_energy_export": record.get("active_energy_export"),
+                    "reactive_energy_import": record.get("reactive_energy_import"),
+                    "reactive_energy_export": record.get("reactive_energy_export"),
+                    "apparent_energy_import": record.get("apparent_energy_import"),
+                    "apparent_energy_export": record.get("apparent_energy_export")
+                })
         
-        if not current_record or not previous_record:
-            return jsonify([])
-            
-        # Calculate difference
-        diff_data = {
-            "reading_time": current_record.get("reading_time"),
-            "position": location.upper(),
-            "meter_type": current_record.get("meter_type"),
-            "meter_serial_number": current_record.get("meter_serial_number"),
-            "active_energy_import": current_record.get("active_energy_import") - previous_record.get("active_energy_import"),
-            "active_energy_export": current_record.get("active_energy_export") - previous_record.get("active_energy_export"),
-            "reactive_energy_import": current_record.get("reactive_energy_import") - previous_record.get("reactive_energy_import"),
-            "reactive_energy_export": current_record.get("reactive_energy_export") - previous_record.get("reactive_energy_export"),
-            "apparent_energy_import": current_record.get("apparent_energy_import") - previous_record.get("apparent_energy_import"),
-            "apparent_energy_export": current_record.get("apparent_energy_export") - previous_record.get("apparent_energy_export")
-        }
-        
-        return jsonify([diff_data])
+        return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
