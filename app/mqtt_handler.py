@@ -19,15 +19,12 @@ class MQTTManager:
         self.mqtt_client.username_pw_set("193006f7395541fc", "193006f7396ceeea")
         self.mqtt_client.connect("mqtt.telkomiot.id", 1883, 18000)
         
-        # Connect to MQTT broker
-        # self.mqtt_client.connect("mqtt.eclipseprojects.io", 1883, 18000)
-
         # Initialize topics
         self.topics = {
             "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441": "Chiller_Witel_Jaksel",
             "v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912": "Lift_Witel_Jaksel",
             "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357": "Lift_OPMC",
-	    "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189": "AHU_Lantai_2"
+	        "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189": "AHU_Lantai_2"
         }
 
         # Initialize message processing components
@@ -156,7 +153,7 @@ class MQTTManager:
 
     def cleanup(self):
         """Cleanup method to be called when shutting down"""
-        self.message_queue.put(None)  # Signal processing thread to stop
+        self.message_queue.put(None) 
         self.processing_thread.join()
         self.executor.shutdown(wait=True)
         self.mqtt_client.loop_stop()

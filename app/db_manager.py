@@ -123,3 +123,24 @@ class DatabaseManager:
 
         result = self.execute_query(query, params)
         return result
+    
+    """
+        Get last two data
+    """
+    def get_data_last_two_data(self, location):
+        query = """
+                SELECT 
+                    * 
+                FROM 
+                    energy_data 
+                WHERE 
+                    position = %s 
+                ORDER BY 
+                    reading_time 
+                DESC 
+                    LIMIT 2
+                """
+        params = [location]
+
+        result = self.execute_query(query, params)
+        return result
