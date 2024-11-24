@@ -72,7 +72,7 @@ class MQTTManager:
 
             for topic, pos in self.topics.items():
                 if msg.topic == topic:
-                    print(f"{datetime.now} : message from {msg.topic}")
+                    print(f"{datetime.now()} : message from {msg.topic}")
                     position = pos
                     break
             else:
