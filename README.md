@@ -72,7 +72,7 @@ Description: Retrieves historical data based on the specified time range and loc
 
 | Parameter  | Type   | Description                                      |
 |------------|--------|--------------------------------------------------|
-| `location` | string | The location identifier (e.g., "Chiller_Witel_Jaksel", "Lift_Witel_Jaksel", "Lift_OPMC").        |
+| `location` | string | The location identifier (e.g., "Chiller_Witel_Jaksel", "Lift_Witel_Jaksel", "Lift_OPMC", "AHU_Lantai_2).|
 | `startdate`| string | Start time in `YYYY-MM-DD%20HH:MM:SS` format.      |
 | `enddate`  | string | End time in `YYYY-MM-DD%20HH:MM:SS` format.        |
 
@@ -86,7 +86,7 @@ Response:
   {
     "id": 1,
     "reading_time": "2024-11-16 20:44:28",
-    "position": "CHILLER_WITEL_JAKSEL",
+    "position": "Chiller_Witel_Jaksel",
     "meter_type": "mk10m",
     "meter_serial_number": 56580,
     "active_energy_import": 19638,
@@ -99,7 +99,7 @@ Response:
   {
     "id": 2,
     "reading_time": "2024-11-16 20:44:31",
-    "position": "LIFT_WITEL_JAKSEL",
+    "position": "Lift_Witel_Jaksel",
     "meter_type": "mk10m",
     "meter_serial_number": 69632,
     "active_energy_import": -46010,
@@ -128,20 +128,32 @@ Response:
 ```
 [
   {
-    "reading_time": "2024-11-18 10:00:00",
-    "position": "Lift_OPMC",
-    "meter_type": "mk10m",
-    "meter_serial_number": 12345,
-    "active_energy_import": 200,
     "active_energy_export": 0,
-    "reactive_energy_import": 150,
-    "reactive_energy_export": 0,
-    "apparent_energy_import": 250,
-    "apparent_energy_export": 0
+    "active_energy_import": 42,
+    "apparent_energy_export": 0,
+    "apparent_energy_import": 460,
+    "id": 579,
+    "meter_serial_number": 251400321,
+    "meter_type": "mk10m",
+    "position": "AHU_Lantai_2",
+    "reactive_energy_export": 449,
+    "reactive_energy_import": 0,
+    "reading_time": "2024-11-24 19:50:03"
   },
-  ...
+  {
+    "active_energy_export": 0,
+    "active_energy_import": 42,
+    "apparent_energy_export": 0,
+    "apparent_energy_import": 460,
+    "id": 576,
+    "meter_serial_number": 251400321,
+    "meter_type": "mk10m",
+    "position": "AHU_Lantai_2",
+    "reactive_energy_export": 449,
+    "reactive_energy_import": 0,
+    "reading_time": "2024-11-24 19:30:02"
+  }
 ]
-
 ```
 
 ### GET /api/fetch_data/anomaly
