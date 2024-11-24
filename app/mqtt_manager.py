@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 import json
 import time
+from datetime import datetime
 
 """
     MQTT handler
@@ -18,14 +19,16 @@ class MQTTManager:
         self.topics = {
             "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441": "Chiller_Witel_Jaksel",
             "v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912": "Lift_Witel_Jaksel",
-            "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357": "Lift_OPMC"
+            "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357": "Lift_OPMC",
+            "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189": "AHU_Lantai_2"
         }
 
         # Store last two records for each location
         self.last_two_records = {
             "Chiller_Witel_Jaksel": [None, None],
             "Lift_Witel_Jaksel": [None, None],
-            "Lift_OPMC": [None, None]
+            "Lift_OPMC": [None, None],
+            "AHU_Lantai_2": [None, None]
         }
 
     """
@@ -69,18 +72,16 @@ class MQTTManager:
 
             for topic, pos in self.topics.items():
                 if msg.topic == topic:
+                    print(f"{datetime.now} : message from {msg.topic}")
                     position = pos
                     break
             else:
                 print(f"Unhandled topic: {msg.topic}")
                 return
           
-            # Update last two records
-            self.last_two_records[position].append(data)
-            self.last_two_records[position] = self.last_two_records[position][-2:]
-
-            prev_data = self.last_two_records[position][0]
-            if prev_data:
+            # Update last two records with difference
+            if self.last_two_records[position][1]: 
+                prev_data = self.last_two_records[position][1]
                 diff_data = {
                     "reading_time": data.get("reading_time"),
                     "position": position,
@@ -93,8 +94,25 @@ class MQTTManager:
                     "apparent_energy_import": data.get("apparent_energy_import") - prev_data.get("apparent_energy_import"),
                     "apparent_energy_export": data.get("apparent_energy_export") - prev_data.get("apparent_energy_export")
                 }
+                self.last_two_records[position].append(diff_data)
+            else:
+                # If no previous data, initialize with zero difference
+                diff_data = {
+                    "reading_time": data.get("reading_time"),
+                    "position": position,
+                    "meter_type": data.get("meter_type"),
+                    "meter_serial_number": data.get("meter_serial_number"),
+                    "active_energy_import": 0,
+                    "active_energy_export": 0,
+                    "reactive_energy_import": 0,
+                    "reactive_energy_export": 0,
+                    "apparent_energy_import": 0,
+                    "apparent_energy_export": 0
+                }
+                self.last_two_records[position].append(diff_data)
 
-                self.db_manager.save_energy_data(diff_data)
+            self.last_two_records[position] = self.last_two_records[position][-2:]
+            self.db_manager.save_energy_data(diff_data)
         except json.JSONDecodeError:
             print("Error: Payload is not valid JSON")
         except KeyError as e:
