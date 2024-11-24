@@ -171,7 +171,7 @@ def get_fetch_data(location, startdate, enddate):
 @app.route('/api/fetch_data/<location>/last_history', methods=['GET'])
 def get_last_history(location):
     try:
-        raw_data = db_manager.get_data_last_two_data(location.upper())
+        raw_data = db_manager.get_data_last_two_data(location)
         
         data = [
             {
