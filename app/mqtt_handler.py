@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
@@ -24,7 +24,7 @@ class MQTTManager:
             "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441": "Chiller_Witel_Jaksel",
             "v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912": "Lift_Witel_Jaksel",
             "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357": "Lift_OPMC",
-	        "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189": "AHU_Lantai_2"
+            "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189": "AHU_Lantai_2"
         }
 
         # Initialize message processing components
@@ -32,6 +32,12 @@ class MQTTManager:
         self.executor = ThreadPoolExecutor(max_workers=4)
         self.processing_thread = threading.Thread(target=self._process_message_queue, daemon=True)
         
+        # Connection monitoring components
+        self.last_message_time = datetime.now(timezone('Asia/Jakarta'))
+        self.connection_monitor_thread = threading.Thread(target=self._monitor_connection, daemon=True)
+        self.monitoring_interval = 30 * 60  # 30 minutes
+        self.stop_monitoring = threading.Event()
+
         # Use a thread-safe dictionary for last records
         self.last_two_records: Dict[str, List[Optional[dict]]] = {
             position: [None, None] for position in self.topics.values()
@@ -44,8 +50,9 @@ class MQTTManager:
             format='%(asctime)s - %(levelname)s - %(message)s'
         )
         
-        # Start the processing thread
+        # Start threads
         self.processing_thread.start()
+        self.connection_monitor_thread.start()
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -53,6 +60,9 @@ class MQTTManager:
             for topic in self.topics:
                 self.mqtt_client.subscribe(topic, qos=2)
                 logging.info(f"Subscribed to '{topic}' topic")
+            
+            # Reset last message time on successful connection
+            self.last_message_time = datetime.now(timezone('Asia/Jakarta'))
         else:
             logging.error(f"Failed to connect, return code: {rc}")
 
@@ -69,10 +79,48 @@ class MQTTManager:
                 for topic in self.topics:
                     self.mqtt_client.subscribe(topic, qos=2)
                     logging.info(f"Resubscribed to '{topic}' topic")
+                
+                # Reset last message time on successful reconnection
+                self.last_message_time = datetime.now(timezone('Asia/Jakarta'))
                 break
             except Exception as e:
                 logging.error(f"Reconnect failed: {e}")
                 time.sleep(3)
+
+    def _monitor_connection(self):
+        """Background thread to monitor message reception and reconnect if needed"""
+        while not self.stop_monitoring.is_set():
+            try:
+                current_time = datetime.now(timezone('Asia/Jakarta'))
+                time_since_last_message = current_time - self.last_message_time
+
+                if time_since_last_message > timedelta(minutes=30):
+                    logging.warning("No messages received in 30 minutes. Reconnecting...")
+                    self.mqtt_client.disconnect()
+                    self.reconnect(self.mqtt_client)
+
+                # Check every 5 minutes
+                time.sleep(5 * 60)
+
+            except Exception as e:
+                logging.error(f"Connection monitoring error: {e}")
+                time.sleep(5 * 60)
+
+    def on_message(self, client, userdata, msg):
+        """Quick handler that just queues messages for processing"""
+        try:
+            current_time = datetime.now(timezone('Asia/Jakarta'))
+            
+            # Update last message time
+            self.last_message_time = current_time
+            
+            logging.info(f"{current_time} : Message received from {msg.topic}")
+            
+            # Add to queue for processing
+            self.message_queue.put_nowait((msg.topic, msg.payload.decode()))
+            
+        except Exception as e:
+            logging.error(f"Error queueing message: {e}")
 
     def _process_message_queue(self):
         """Background thread to process queued messages"""
@@ -136,23 +184,13 @@ class MQTTManager:
             "apparent_energy_export": current_data.get("apparent_energy_export") - prev_data.get("apparent_energy_export", 0)
         }
 
-    def on_message(self, client, userdata, msg):
-        """Quick handler that just queues messages for processing"""
-        try:
-            current_time = datetime.now(timezone('Asia/Jakarta'))
-            logging.info(f"{current_time} : Message received from {msg.topic}")
-            
-            # Add to queue for processing
-            self.message_queue.put_nowait((msg.topic, msg.payload.decode()))
-            
-        except Exception as e:
-            logging.error(f"Error queueing message: {e}")
-
     def start_mqtt_loop(self):
         self.mqtt_client.loop_start()
 
     def cleanup(self):
         """Cleanup method to be called when shutting down"""
+        self.stop_monitoring.set()  # Stop connection monitoring thread
+        self.connection_monitor_thread.join()
         self.message_queue.put(None) 
         self.processing_thread.join()
         self.executor.shutdown(wait=True)
