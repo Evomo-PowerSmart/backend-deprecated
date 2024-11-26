@@ -14,7 +14,7 @@ class MQTTManager:
         self.mqtt_client.on_message = self.on_message
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.username_pw_set("193006f7395541fc", "193006f7396ceeea")
-        self.mqtt_client.connect("mqtt.eclipseprojects.io", 1883, 3600)
+        self.mqtt_client.connect("mqtt.telkomiot.id", 1883, 3600)
 
         self.topics = {
             "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441": "Chiller_Witel_Jaksel",
