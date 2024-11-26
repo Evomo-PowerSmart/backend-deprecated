@@ -4,28 +4,28 @@ import json
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
-from flask_socketio import SocketIO
 from datetime import datetime
 from db_manager import DatabaseManager
 from mqtt_handler import MQTTManager
+from mqtt_monitor import MQTTConnectionMonitor 
 from flask import Flask, render_template, redirect, url_for, request, session
 from firebase_admin import credentials, auth, initialize_app
 from functools import wraps
 import atexit
 
 """
-    Socket and Flask
+    Flask
 """
 app = Flask(__name__)
 app.secret_key = 'ss2'
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 """
    DB and MQTT Handler 
 """
 db_manager = DatabaseManager()
 mqtt_manager = MQTTManager(db_manager)
+mqtt_connection_monitor = MQTTConnectionMonitor(mqtt_manager)
 
 """
    Creds
@@ -52,14 +52,6 @@ def get_firebase_config():
 
 cred = credentials.Certificate(get_firebase_config())
 firebase_admin.initialize_app(cred)
-
-
-"""
-    Local credentials
-    save firebase_credentials.json inside the app folder, uncomment the command below and comment the code above
-"""
-# cred = credentials.Certificate("firebase_credentials.json"))
-# firebase_admin.initialize_app(cred)
 
 """
    Login req
@@ -89,7 +81,6 @@ def get_firebase_config():
     }
     return jsonify(config)
 
-
 """
    login page
 """
@@ -118,7 +109,6 @@ def login():
 @app.route('/index')
 @login_required
 def dashboard():
-    # return f"Welcome to your dashboard, User ID: {session['uid']}"
     return render_template('index.html') # FOR WEB
 
 """
@@ -127,7 +117,6 @@ def dashboard():
 @app.route('/logout')
 def logout():
     session.pop('uid', None)
-    # return redirect(url_for('index')) FOR WEB
 
 """
    Historical data req
@@ -249,14 +238,68 @@ def get_anomaly_data_by_id(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-mqtt_manager.start_mqtt_loop()
-atexit.register(mqtt_manager.cleanup)
+"""
+    Connection Check Endpoints
+"""
+@app.route('/api/check_database_connection', methods=['GET'])
+def check_database_connection():
+    """
+    Endpoint untuk mengecek koneksi ke database PostgreSQL
+    """
+    try:
+        # Gunakan kredensial yang sama dengan di DatabaseManager
+        conn = psycopg2.connect(
+            host="34.123.56.222",
+            port="5432",
+            dbname="metrics_data",
+            user="postgres",
+            password="keren123"
+        )
+        conn.close()
+        return jsonify({
+            "status": "success", 
+            "message": "Database connection established successfully"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "status": "error", 
+            "message": f"Database connection failed: {str(e)}"
+        }), 500
+
+@app.route('/api/check_mqtt_connection', methods=['GET'])
+def check_mqtt_connection():
+    """
+    Endpoint untuk mengecek koneksi ke MQTT broker
+    """
+    try:
+        is_connected = mqtt_manager.check_mqtt_connection()
+        if is_connected:
+            return jsonify({
+                "status": "success", 
+                "message": "MQTT broker connection is active"
+            }), 200
+        else:
+            return jsonify({
+                "status": "error", 
+                "message": "MQTT broker connection failed"
+            }), 500
+    except Exception as e:
+        return jsonify({
+            "status": "error", 
+            "message": f"MQTT connection check failed: {str(e)}"
+        }), 500
 
 """
     Main
 """
 if __name__ == '__main__':
     try:
-        socketio.run(app, host='0.0.0.0', port='5000', debug=False)
+        mqtt_connection_monitor.start()
+        mqtt_manager.start_mqtt_loop()
+
+        atexit.register(mqtt_manager.cleanup)
+        atexit.register(mqtt_connection_monitor.stop)
+        
+        app.run(host='0.0.0.0', port=5000, debug=False)
     finally:
         mqtt_manager.cleanup()
