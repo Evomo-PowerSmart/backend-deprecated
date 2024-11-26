@@ -8,6 +8,7 @@ from queue import Queue
 import logging
 from typing import Dict, List, Optional
 import threading
+import subprocess
 
 class MQTTManager:
     def __init__(self, db_manager):
@@ -94,17 +95,23 @@ class MQTTManager:
                 current_time = datetime.now(timezone('Asia/Jakarta'))
                 time_since_last_message = current_time - self.last_message_time
 
-                if time_since_last_message > timedelta(minutes=30):
-                    logging.warning("No messages received in 30 minutes. Reconnecting...")
-                    self.mqtt_client.disconnect()
-                    self.reconnect(self.mqtt_client)
+                if time_since_last_message > timedelta(minutes=20):
+                    try:
+                        # Perintah restart supervisor (sesuaikan dengan nama aplikasi Anda)
+                        subprocess.run(['sudo', 'supervisorctl', 'restart', 'flask_app'], check=True)
+                        logging.info("Supervisor restarted successfully")
+                    except subprocess.CalledProcessError as e:
+                        logging.error(f"Failed to restart supervisor: {e}")
+                    except Exception as e:
+                        logging.error(f"Unexpected error restarting supervisor: {e}")
+                        logging.warning("No messages received in 30 minutes. Reconnecting...")
 
-                # Check every 5 minutes
-                time.sleep(5 * 60)
+                # Check every 3 minutes
+                time.sleep(3 * 60)
 
             except Exception as e:
                 logging.error(f"Connection monitoring error: {e}")
-                time.sleep(5 * 60)
+                time.sleep(3 * 60)
 
     def on_message(self, client, userdata, msg):
         """Quick handler that just queues messages for processing"""
