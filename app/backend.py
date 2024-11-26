@@ -238,34 +238,6 @@ def get_anomaly_data_by_id(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-"""
-    Connection Check Endpoints
-"""
-@app.route('/api/check_database_connection', methods=['GET'])
-def check_database_connection():
-    """
-    Endpoint untuk mengecek koneksi ke database PostgreSQL
-    """
-    try:
-        # Gunakan kredensial yang sama dengan di DatabaseManager
-        conn = psycopg2.connect(
-            host="34.123.56.222",
-            port="5432",
-            dbname="metrics_data",
-            user="postgres",
-            password="keren123"
-        )
-        conn.close()
-        return jsonify({
-            "status": "success", 
-            "message": "Database connection established successfully"
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "status": "error", 
-            "message": f"Database connection failed: {str(e)}"
-        }), 500
-
 @app.route('/api/check_mqtt_connection', methods=['GET'])
 def check_mqtt_connection():
     """
@@ -299,7 +271,7 @@ if __name__ == '__main__':
 
         atexit.register(mqtt_manager.cleanup)
         atexit.register(mqtt_connection_monitor.stop)
-        
+
         app.run(host='0.0.0.0', port=5000, debug=False)
     finally:
         mqtt_manager.cleanup()
