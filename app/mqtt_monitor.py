@@ -51,7 +51,7 @@ class MQTTConnectionMonitor:
     def _restart_supervisor(self):
         try:
             # Perintah restart supervisor (sesuaikan dengan nama aplikasi Anda)
-            subprocess.run(['sudo', 'supervisorctl', 'restart', 'your_app_name'], check=True)
+            subprocess.run(['sudo', 'supervisorctl', 'restart', 'flask_app'], check=True)
             logging.info("Supervisor restarted successfully")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to restart supervisor: {e}")
