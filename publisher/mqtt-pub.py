@@ -7,7 +7,7 @@ from datetime import datetime
 # Konfigurasi MQTT
 MQTT_BROKER = "mqtt.eclipseprojects.io"
 MQTT_PORT = 1883
-MQTT_TOPICS = ["evomo/raw_data/loc_a", "evomo/raw_data/loc_b", "evomo/raw_data/loc_c"]
+MQTT_TOPICS = ["v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441", "v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912", "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357", "v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189"]
 
 # Callback ketika berhasil terkoneksi
 def on_connect(client, userdata, flags, rc):
@@ -41,7 +41,7 @@ try:
             # Membuat payload dalam format yang diminta
             payload = {
                 "counter": counter,
-                "data": {
+                "data": json.dumps({
                     "meter_type": "mk10m",
                     "data_type": "instant data",
                     "reading_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -62,7 +62,7 @@ try:
                     "instantaneous_power_factor": round(random.uniform(0.08, 1.0), 4),
                     "create_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "raw": "0f80000000000212167016c806671c254b0a09323531343030333231150000000002f9d3a015000000000000000015000000000001421d150000000001a95f9a1500000000064a2b531500000000000000000600037b790600037bba06000382ee06000001830600000193060000019e1213850500000382"
-                },
+                }),
                 "devEui": "123494e68681e40c",
                 "port": 11,
                 "radio": {
@@ -109,7 +109,7 @@ try:
         
         # Increment counter
         counter += 1
-	time.sleep(600) 
+        time.sleep(600) 
 
 except KeyboardInterrupt:
     print("\nMenghentikan program...")

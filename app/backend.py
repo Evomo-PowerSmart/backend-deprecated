@@ -170,25 +170,28 @@ def get_fetch_data(location, startdate, enddate):
 @app.route('/api/fetch_data/<location>/last_history', methods=['GET'])
 def get_last_history(location):
     try:
-        records = mqtt_manager.last_two_records.get(location, [])
+        raw_data = db_manager.get_data_last_two_data(location)
         
-        data = []
-        for record in records:
-            if record:
-                data.append({
-                    "reading_time": record.get("reading_time"),
-                    "position": location.upper(),
-                    "meter_type": record.get("meter_type"),
-                    "meter_serial_number": record.get("meter_serial_number"),
-                    "active_energy_import": record.get("active_energy_import"),
-                    "active_energy_export": record.get("active_energy_export"),
-                    "reactive_energy_import": record.get("reactive_energy_import"),
-                    "reactive_energy_export": record.get("reactive_energy_export"),
-                    "apparent_energy_import": record.get("apparent_energy_import"),
-                    "apparent_energy_export": record.get("apparent_energy_export")
-                })
+        data = [
+            {
+                "id": item[0],
+                "reading_time": item[1].strftime("%Y-%m-%d %H:%M:%S"),
+                "position": item[2],
+                "meter_type": item[3],
+                "meter_serial_number": item[4],
+                "active_energy_import": item[5],
+                "active_energy_export": item[6],
+                "reactive_energy_import": item[7],
+                "reactive_energy_export": item[8],
+                "apparent_energy_import": item[9],
+                "apparent_energy_export": item[10]
+            }
+            for item in raw_data
+        ]
         
         return jsonify(data)
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD HH:MM:SS"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
