@@ -14,40 +14,17 @@ def setup_logging():
         ]
     )
 
-def run_mqtt_service():
-    """
-    Initialize and run the MQTT service with proper error handling.
-    """
-    try:
-        # Setup logging first
-        setup_logging()
-        logging.info("Starting MQTT Service...")
+setup_logging()
+logging.info("Starting MQTT Service...")
 
-        # Initialize database manager and MQTT manager
-        db_manager = DatabaseManager()
-        mqtt_manager = MQTTManager(db_manager)
-
-        # Start MQTT loop
-        logging.info("Starting MQTT client loop...")
-        mqtt_manager.start_mqtt_loop()
-
-        # Keep the main thread running
-        mqtt_manager.mqtt_client.loop_forever()
-
-    except Exception as e:
-        logging.error(f"Critical error in MQTT service: {e}", exc_info=True)
-        sys.exit(1)
-
-def graceful_shutdown(mqtt_manager):
-    """
-    Perform cleanup when the service is stopping.
-    """
-    logging.info("Performing graceful shutdown...")
-    mqtt_manager.cleanup()
+db_manager = DatabaseManager()
+mqtt_manager = MQTTManager(db_manager)
 
 if __name__ == "__main__":
     try:
-        run_mqtt_service()
+        logging.info("Starting MQTT client loop...")
+        mqtt_manager.mqtt_client.loop_forever()
     except KeyboardInterrupt:
         logging.info("MQTT Service stopped by user.")
+        mqtt_manager.cleanup()
         sys.exit(0)

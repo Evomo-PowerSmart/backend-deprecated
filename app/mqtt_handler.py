@@ -9,7 +9,6 @@ import logging
 from typing import Dict, List, Optional
 import threading
 import subprocess
-import shutil
 
 class MQTTManager:
     def __init__(self, db_manager):
@@ -34,11 +33,6 @@ class MQTTManager:
         self.executor = ThreadPoolExecutor(max_workers=4)
         self.processing_thread = threading.Thread(target=self._process_message_queue, daemon=True)
         
-        # Connection monitoring components
-        self.last_message_time = datetime.now(timezone('Asia/Jakarta'))
-        self.connection_monitor_thread = threading.Thread(target=self._monitor_connection, daemon=True)
-        self.monitoring_interval = 30 * 60  # 30 minutes
-        self.stop_monitoring = threading.Event()
 
         # Use a thread-safe dictionary for last records
         self.last_two_records: Dict[str, List[Optional[dict]]] = {
@@ -54,7 +48,6 @@ class MQTTManager:
         
         # Start threads
         self.processing_thread.start()
-        self.connection_monitor_thread.start()
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -88,32 +81,6 @@ class MQTTManager:
             except Exception as e:
                 logging.error(f"Reconnect failed: {e}")
                 time.sleep(3)
-
-    def _monitor_connection(self):
-        """Background thread to monitor message reception and reconnect if needed"""
-        while not self.stop_monitoring.is_set():
-            try:
-                current_time = datetime.now(timezone('Asia/Jakarta'))
-                time_since_last_message = current_time - self.last_message_time
-
-                if time_since_last_message > timedelta(minutes=20):
-                    try:
-                        # Perintah restart supervisor (sesuaikan dengan nama aplikasi Anda)
-                        sudo_path = shutil.which('sudo')
-                        subprocess.run([sudo_path, 'supervisorctl', 'restart', 'flask_app'], check=True)
-                        logging.info("Supervisor restarted successfully")
-                    except subprocess.CalledProcessError as e:
-                        logging.error(f"Failed to restart supervisor: {e}")
-                    except Exception as e:
-                        logging.error(f"Unexpected error restarting supervisor: {e}")
-                        logging.warning("No messages received in 20 minutes. Reconnecting...")
-
-                # Check every 3 minutes
-                time.sleep(3 * 60)
-
-            except Exception as e:
-                logging.error(f"Connection monitoring error: {e}")
-                time.sleep(3 * 60)
 
     def on_message(self, client, userdata, msg):
         """Quick handler that just queues messages for processing"""
@@ -193,13 +160,8 @@ class MQTTManager:
             "apparent_energy_export": current_data.get("apparent_energy_export") - prev_data.get("apparent_energy_export", 0)
         }
 
-    def start_mqtt_loop(self):
-        self.mqtt_client.loop_start()
-
     def cleanup(self):
         """Cleanup method to be called when shutting down"""
-        self.stop_monitoring.set()  # Stop connection monitoring thread
-        self.connection_monitor_thread.join()
         self.message_queue.put(None) 
         self.processing_thread.join()
         self.executor.shutdown(wait=True)
