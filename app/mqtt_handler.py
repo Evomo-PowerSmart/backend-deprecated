@@ -9,6 +9,7 @@ import logging
 from typing import Dict, List, Optional
 import threading
 import subprocess
+import shutil
 
 class MQTTManager:
     def __init__(self, db_manager):
@@ -98,7 +99,8 @@ class MQTTManager:
                 if time_since_last_message > timedelta(minutes=20):
                     try:
                         # Perintah restart supervisor (sesuaikan dengan nama aplikasi Anda)
-                        subprocess.run(['sudo', 'supervisorctl', 'restart', 'flask_app'], check=True)
+                        sudo_path = shutil.which('sudo')
+                        subprocess.run([sudo_path, 'supervisorctl', 'restart', 'flask_app'], check=True)
                         logging.info("Supervisor restarted successfully")
                     except subprocess.CalledProcessError as e:
                         logging.error(f"Failed to restart supervisor: {e}")
