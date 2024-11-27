@@ -19,13 +19,13 @@ import atexit
 app = Flask(__name__)
 app.secret_key = 'ss2'
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+# socketio = SocketIO(app, cors_allowed_origins="*")
 
 """
    DB and MQTT Handler 
 """
 db_manager = DatabaseManager()
-mqtt_manager = MQTTManager(db_manager)
+# mqtt_manager = MQTTManager(db_manager)
 
 """
    Creds
@@ -249,14 +249,8 @@ def get_anomaly_data_by_id(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-mqtt_manager.start_mqtt_loop()
-atexit.register(mqtt_manager.cleanup)
-
 """
     Main
 """
 if __name__ == '__main__':
-    try:
-        socketio.run(app, host='0.0.0.0', port='5000', debug=False)
-    finally:
-        mqtt_manager.cleanup()
+    app.run(app, host='0.0.0.0', port='5000', debug=False)

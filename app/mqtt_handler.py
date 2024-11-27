@@ -106,7 +106,7 @@ class MQTTManager:
                         logging.error(f"Failed to restart supervisor: {e}")
                     except Exception as e:
                         logging.error(f"Unexpected error restarting supervisor: {e}")
-                        logging.warning("No messages received in 30 minutes. Reconnecting...")
+                        logging.warning("No messages received in 20 minutes. Reconnecting...")
 
                 # Check every 3 minutes
                 time.sleep(3 * 60)
