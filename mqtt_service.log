@@ -1,0 +1,25 @@
+2024-11-27 09:44:17,820 - INFO - Starting MQTT Service...
+2024-11-27 09:44:19,353 - INFO - Starting MQTT client loop...
+2024-11-27 09:44:19,562 - WARNING - Disconnected with result code 7
+2024-11-27 09:44:19,563 - INFO - Attempting to reconnect...
+2024-11-27 09:44:19,794 - INFO - Resubscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441' topic
+2024-11-27 09:44:19,795 - INFO - Resubscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912' topic
+2024-11-27 09:44:19,795 - INFO - Resubscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357' topic
+2024-11-27 09:44:19,795 - INFO - Resubscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189' topic
+2024-11-27 09:44:19,795 - WARNING - Disconnected with result code 2
+2024-11-27 09:44:19,795 - INFO - Attempting to reconnect...
+2024-11-27 09:44:20,027 - INFO - Resubscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441' topic
+2024-11-27 09:44:20,027 - INFO - Resubscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912' topic
+2024-11-27 09:44:20,027 - INFO - Resubscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357' topic
+2024-11-27 09:44:20,027 - INFO - Resubscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189' topic
+2024-11-27 09:44:21,396 - INFO - Connected to MQTT broker
+2024-11-27 09:44:21,396 - INFO - Subscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441' topic
+2024-11-27 09:44:21,396 - INFO - Subscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912' topic
+2024-11-27 09:44:21,396 - INFO - Subscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357' topic
+2024-11-27 09:44:21,396 - INFO - Subscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189' topic
+2024-11-27 09:44:22,495 - INFO - Connected to MQTT broker
+2024-11-27 09:44:22,495 - INFO - Subscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd4fb68de46441' topic
+2024-11-27 09:44:22,495 - INFO - Subscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650c04ed6097879912' topic
+2024-11-27 09:44:22,495 - INFO - Subscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd518fdbd25357' topic
+2024-11-27 09:44:22,495 - INFO - Subscribed to 'v2.0/subs/APP64f7e28a5964d54552/DEV650bfd505a3a394189' topic
+2024-11-27 09:44:30,922 - INFO - MQTT Service stopped by user.
